@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAB | My Applications</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:system-ui,'Segoe UI','Inter',sans-serif;background:#f5faf6;color:#1e2a2f}
+    a{text-decoration:none;color:inherit}
+    .navbar{background:#fff;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e0ead8;box-shadow:0 2px 10px rgba(0,32,0,.06);position:sticky;top:0;z-index:50}
+    .navbar-left{display:flex;align-items:center;gap:10px}
+    .navbar-left img{height:42px}
+    .navbar-title{font-size:1rem;font-weight:800;color:#1f6e43}
+    .navbar-right{display:flex;align-items:center;gap:14px;font-size:.85rem;flex-wrap:wrap}
+    .navbar-right a{color:#1f6e43;font-weight:600}
+    .navbar-right span{background:#ecf7ee;color:#1f6e43;padding:5px 12px;border-radius:16px;font-weight:600}
+    .btn-green{background:#1f6e43;color:#fff!important;padding:7px 16px;border-radius:20px}
+    .btn-green:hover{background:#155230}
+
+    .page{max-width:1000px;margin:0 auto;padding:36px 24px}
+    .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap}
+    .page-header h1{font-size:1.7rem;font-weight:800;color:#1a3a28;margin-bottom:4px}
+    .page-header p{font-size:.88rem;color:#5a7a6a}
+    .new-btn{display:inline-flex;align-items:center;gap:8px;background:#1f6e43;color:#fff;padding:10px 22px;border-radius:24px;font-weight:700;font-size:.88rem;white-space:nowrap;transition:.15s}
+    .new-btn:hover{background:#155230}
+
+    .card{background:#fff;border-radius:18px;border:1px solid #e0ead8;box-shadow:0 4px 14px rgba(0,32,0,.05);overflow:hidden}
+    table{width:100%;border-collapse:collapse;font-size:.85rem}
+    th{padding:13px 18px;text-align:left;background:#f5faf5;font-weight:700;color:#4a6a5a;font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #e0ead8}
+    td{padding:14px 18px;border-top:1px solid #f0f5f0;color:#2a3e30;vertical-align:middle}
+    tr:hover td{background:#fafff9}
+
+    .badge{padding:4px 12px;border-radius:12px;font-size:.78rem;font-weight:700;display:inline-block}
+    .badge-pending{background:#fff8e1;color:#9a6800}
+    .badge-approved{background:#e4f9ea;color:#0d6030}
+    .badge-rejected{background:#fdeaea;color:#a02020}
+
+    .seed-chip{background:#e8f4ee;color:#1a5a30;padding:4px 10px;border-radius:8px;font-size:.82rem;font-weight:600;display:inline-block}
+    .ha-text{font-size:.82rem;color:#6a8a78}
+
+    .empty{text-align:center;padding:64px 24px;color:#7a9a88}
+    .empty span{font-size:3rem;display:block;margin-bottom:14px}
+    .empty h3{font-size:1.1rem;font-weight:700;color:#3a6a50;margin-bottom:8px}
+    .empty a{display:inline-block;margin-top:16px;background:#1f6e43;color:#fff;padding:11px 26px;border-radius:24px;font-weight:700;font-size:.9rem}
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-left">
+    <img src="/static/RAB_Logo2.png" alt="RAB" onerror="this.style.display='none'">
+    <div class="navbar-title">📋 My Applications</div>
+  </div>
+  <div class="navbar-right">
+    <a href="/">← Home</a>
+    <a href="/predict/">📊 Predict</a>
+    <a href="/agent/">🤖 AI</a>
+    <span>👤 {{ request.user.username }}</span>
+    <a href="/logout/" class="btn-green">Logout</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>🌱 My Seed Applications</h1>
+      <p>All your submitted applications and their current status from RAB.</p>
+    </div>
+    <a href="/apply-seed/" class="new-btn">+ New Application</a>
+  </div>
+
+  <div class="card">
+    {% if apps %}
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Full Name</th>
+          <th>Seed Type</th>
+          <th>District</th>
+          <th>Land (ha)</th>
+          <th>Seeds Needed</th>
+          <th>Status</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for app in apps %}
+        <tr>
+          <td style="color:#8aaa9a;font-size:.8rem">{{ forloop.counter }}</td>
+          <td><strong>{{ app.full_name }}</strong><br><span style="font-size:.76rem;color:#7a9a88">{{ app.national_id }}</span></td>
+          <td><span class="seed-chip">{{ app.seed_type }}</span></td>
+          <td>{{ app.district }}</td>
+          <td><span class="ha-text">{{ app.land_size }} ha</span></td>
+          <td><strong>{{ app.recommended_seeds_kg }} kg</strong></td>
+          <td><span class="badge badge-{{ app.status }}">{{ app.get_status_display }}</span></td>
+          <td style="font-size:.8rem;color:#7a9a88">{{ app.created_at|date:"d M Y" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">
+      <span>🌱</span>
+      <h3>No applications yet</h3>
+      <p>You haven't applied for any seeds yet.<br>Submit your first application to get started.</p>
+      <a href="/apply-seed/">Apply for Seeds Now →</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+</body>
+</html>

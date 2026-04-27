@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAB | Apply for Seeds</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:system-ui,'Segoe UI','Inter',sans-serif;background:#f5faf6;color:#1e2a2f;min-height:100vh}
+    a{text-decoration:none;color:inherit}
+    .navbar{background:#fff;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e0ead8;box-shadow:0 2px 10px rgba(0,32,0,.06);position:sticky;top:0;z-index:50}
+    .navbar-left{display:flex;align-items:center;gap:10px}
+    .navbar-left img{height:42px}
+    .navbar-title{font-size:1rem;font-weight:800;color:#1f6e43}
+    .navbar-right{display:flex;align-items:center;gap:14px;font-size:.85rem;flex-wrap:wrap}
+    .navbar-right a{color:#1f6e43;font-weight:600}
+    .navbar-right span{background:#ecf7ee;color:#1f6e43;padding:5px 12px;border-radius:16px;font-weight:600}
+    .btn-g{background:#1f6e43;color:#fff!important;padding:7px 16px;border-radius:20px}
+    .btn-g:hover{background:#155230}
+
+    .page{max-width:680px;margin:0 auto;padding:40px 24px}
+    .page-header{margin-bottom:28px}
+    .page-header h1{font-size:1.7rem;font-weight:800;color:#1a3a28;margin-bottom:6px}
+    .page-header p{font-size:.9rem;color:#5a7a6a}
+
+    .card{background:#fff;border-radius:20px;padding:32px;border:1px solid #e0ead8;box-shadow:0 6px 20px rgba(0,32,0,.06)}
+
+    .messages{margin-bottom:20px}
+    .msg-success{background:#e8f9ee;border:1.5px solid #1f8a4c;border-radius:12px;padding:14px 18px;color:#0d5028;font-weight:600;display:flex;align-items:center;gap:10px}
+    .msg-error{background:#fdeaea;border:1.5px solid #e05050;border-radius:12px;padding:14px 18px;color:#8a0000;font-weight:600;display:flex;align-items:center;gap:10px}
+
+    .user-info{background:#f0f9f2;border-radius:10px;padding:10px 16px;font-size:.85rem;color:#2a6742;margin-bottom:22px;display:flex;align-items:center;gap:8px}
+
+    label{display:block;font-weight:600;font-size:.87rem;color:#1f4d32;margin-bottom:5px;margin-top:16px}
+    label:first-of-type{margin-top:0}
+    input,select,textarea{width:100%;padding:11px 14px;border:1.5px solid #c4dcc8;border-radius:10px;font-size:.9rem;background:#fafff9;color:#1e2a2f;transition:.15s;font-family:inherit}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:#1f6e43;background:#fff;box-shadow:0 0 0 3px rgba(31,110,67,.08)}
+    .error-field{border-color:#e05050!important;background:#fff5f5!important}
+    .field-error{font-size:.78rem;color:#c03030;margin-top:3px;font-weight:500}
+
+    /* Seed calculator widget */
+    .seed-calc{background:#f0fbf4;border:1.5px solid #a8d8b8;border-radius:12px;padding:14px 18px;margin-top:12px;display:none}
+    .seed-calc.show{display:block}
+    .seed-calc p{font-size:.88rem;color:#1a5030}
+    .seed-calc strong{color:#0d4020;font-size:1rem}
+
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+    .submit-btn{width:100%;margin-top:24px;padding:14px;background:linear-gradient(135deg,#1f6e43,#2b9c5e);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:.15s;letter-spacing:.3px}
+    .submit-btn:hover{box-shadow:0 6px 20px rgba(31,110,67,.35);transform:translateY(-1px)}
+
+    .back-link{display:block;margin-top:16px;text-align:center;font-size:.88rem;color:#5a8a6a}
+    .back-link a{color:#1f6e43;font-weight:600}
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-left">
+    <img src="/static/RAB_Logo2.png" alt="RAB" onerror="this.style.display='none'">
+    <div class="navbar-title">🌱 Apply for Seeds</div>
+  </div>
+  <div class="navbar-right">
+    <a href="/">← Home</a>
+    <a href="/predict/">📊 Predict</a>
+    <a href="/my-applications/">📋 My Apps</a>
+    <span>👤 {{ request.user.username }}</span>
+    <a href="/logout/" class="btn-g">Logout</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <h1>🌱 Apply for Seeds</h1>
+    <p>Submit your seed request to RAB. Your recommended seed quantity will be calculated automatically based on your land size.</p>
+  </div>
+
+  <div class="card">
+    {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+      <div class="{% if message.tags == 'success' %}msg-success{% else %}msg-error{% endif %}">
+        {% if message.tags == 'success' %}✅{% else %}⚠️{% endif %}
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="user-info">
+      ✅ Logged in as: <strong>{{ request.user.username }}</strong>
+    </div>
+
+    <form method="POST" id="seedForm">
+      {% csrf_token %}
+
+      <div class="two-col">
+        <div>
+          <label>Full Name</label>
+          <input type="text" name="full_name" placeholder="Your full name" required
+                 value="{{ form.full_name.value|default:'' }}"
+                 class="{% if form.full_name.errors %}error-field{% endif %}">
+          {% if form.full_name.errors %}<div class="field-error">{{ form.full_name.errors|join:", " }}</div>{% endif %}
+        </div>
+        <div>
+          <label>National ID</label>
+          <input type="text" name="national_id" placeholder="e.g. 1199870012345678" required
+                 value="{{ form.national_id.value|default:'' }}"
+                 class="{% if form.national_id.errors %}error-field{% endif %}">
+          {% if form.national_id.errors %}<div class="field-error">{{ form.national_id.errors|join:", " }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <label>District</label>
+          <select name="district" required id="districtSelect" class="{% if form.district.errors %}error-field{% endif %}">
+            <option value="">— Select District —</option>
+            {% for val, label in form.fields.district.choices %}
+              {% if val %}<option value="{{ val }}" {% if form.district.value == val %}selected{% endif %}>{{ label }}</option>{% endif %}
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label>Seed Type</label>
+          <select name="seed_type" required id="seedSelect" onchange="updateCalculator()" class="{% if form.seed_type.errors %}error-field{% endif %}">
+            <option value="">— Select Seed —</option>
+            {% for val, label in form.fields.seed_type.choices %}
+              {% if val %}<option value="{{ val }}" {% if form.seed_type.value == val %}selected{% endif %}>{{ label }}</option>{% endif %}
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <label>Land Size (hectares)</label>
+      <input type="number" name="land_size" id="landInput" placeholder="e.g. 2.5" step="0.1" min="0.1" required
+             value="{{ form.land_size.value|default:'' }}"
+             oninput="updateCalculator()"
+             class="{% if form.land_size.errors %}error-field{% endif %}">
+      {% if form.land_size.errors %}<div class="field-error">{{ form.land_size.errors|join:", " }}</div>{% endif %}
+
+      <!-- Smart Seed Calculator -->
+      <div class="seed-calc" id="seedCalc">
+        <p>📦 Recommended quantity for <strong id="calcCrop">—</strong> on <strong id="calcLand">—</strong> hectares:</p>
+        <strong id="calcResult">— kg</strong>
+        <p style="margin-top:6px;font-size:.8rem;color:#3a7050">Based on RAB standard seeding rates per hectare</p>
+      </div>
+
+      <label>Additional Notes (optional)</label>
+      <textarea name="notes" rows="3" placeholder="Any extra information (soil type, irrigation, etc.)...">{{ form.notes.value|default:'' }}</textarea>
+
+      <button type="submit" class="submit-btn">🌱 Submit Application</button>
+    </form>
+
+    <p class="back-link"><a href="/">← Back to Home</a> &nbsp;·&nbsp; <a href="/my-applications/">View my applications</a></p>
+  </div>
+</div>
+
+<script>
+const seedRates = {
+  'Maize': 25, 'Beans': 60, 'Irish Potato': 1500,
+  'Wheat': 120, 'Sorghum': 10, 'Rice': 80
+};
+
+function updateCalculator() {
+  const crop = document.getElementById('seedSelect').value;
+  const land = parseFloat(document.getElementById('landInput').value);
+  const calc = document.getElementById('seedCalc');
+
+  if (crop && land && land > 0 && seedRates[crop]) {
+    const qty = (seedRates[crop] * land).toFixed(1);
+    document.getElementById('calcCrop').textContent = crop;
+    document.getElementById('calcLand').textContent = land;
+    document.getElementById('calcResult').textContent = parseFloat(qty).toLocaleString() + ' kg';
+    calc.classList.add('show');
+  } else {
+    calc.classList.remove('show');
+  }
+}
+// Initialize on load if values exist
+window.onload = updateCalculator;
+</script>
+
+</body>
+</html>

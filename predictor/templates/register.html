@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAB | Create Account</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:system-ui,'Segoe UI','Inter',sans-serif;background:linear-gradient(135deg,#0d4a27 0%,#1a6e3f 60%,#2b9c5e 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{background:#fff;border-radius:22px;padding:40px 36px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+    .logo-area{text-align:center;margin-bottom:26px}
+    .logo-area img{height:56px;margin-bottom:10px}
+    .logo-area h2{font-size:1.35rem;font-weight:800;color:#1a3a28;margin-bottom:4px}
+    .logo-area p{font-size:.85rem;color:#5a7a6a}
+    label{display:block;font-weight:600;font-size:.87rem;color:#1f4d32;margin-bottom:5px;margin-top:14px}
+    label:first-of-type{margin-top:0}
+    input{width:100%;padding:11px 14px;border:1.5px solid #c4dcc8;border-radius:10px;font-size:.92rem;background:#fafff9;transition:.15s}
+    input:focus{outline:none;border-color:#1f6e43;background:#fff;box-shadow:0 0 0 3px rgba(31,110,67,.08)}
+    .field-error{font-size:.78rem;color:#c03030;margin-top:3px;font-weight:500}
+    .error-input{border-color:#e05050!important;background:#fff5f5!important}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .btn{width:100%;margin-top:22px;padding:13px;background:linear-gradient(135deg,#1f6e43,#2b9c5e);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:.15s}
+    .btn:hover{box-shadow:0 6px 20px rgba(31,110,67,.35);transform:translateY(-1px)}
+    .bottom{text-align:center;margin-top:16px;font-size:.85rem;color:#5a7a6a}
+    .bottom a{color:#1f6e43;font-weight:700}
+    .hint{font-size:.77rem;color:#7a9a88;margin-top:3px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo-area">
+      <img src="/static/RAB_Logo2.png" alt="RAB" onerror="this.style.display='none'">
+      <h2>Create Farmer Account</h2>
+      <p>Join the RAB Smart Farming Platform</p>
+    </div>
+    <form method="POST">
+      {% csrf_token %}
+      <label>Username</label>
+      <input type="text" name="username" placeholder="Choose a username" autofocus required
+             value="{{ form.username.value|default:'' }}"
+             class="{% if form.username.errors %}error-input{% endif %}">
+      {% if form.username.errors %}<div class="field-error">{{ form.username.errors|join:", " }}</div>{% endif %}
+
+      <label>Email Address</label>
+      <input type="email" name="email" placeholder="your@email.com"
+             value="{{ form.email.value|default:'' }}"
+             class="{% if form.email.errors %}error-input{% endif %}">
+      {% if form.email.errors %}<div class="field-error">{{ form.email.errors|join:", " }}</div>{% endif %}
+
+      <div class="two-col">
+        <div>
+          <label>Password</label>
+          <input type="password" name="password" placeholder="Min. 6 characters" required
+                 class="{% if form.password.errors %}error-input{% endif %}">
+          {% if form.password.errors %}<div class="field-error">{{ form.password.errors|join:", " }}</div>{% endif %}
+        </div>
+        <div>
+          <label>Confirm Password</label>
+          <input type="password" name="password2" placeholder="Repeat password" required>
+          {% if form.password2.errors %}<div class="field-error">{{ form.password2.errors|join:", " }}</div>{% endif %}
+        </div>
+      </div>
+
+      {% if form.non_field_errors %}
+      <div class="field-error" style="margin-top:10px">⚠️ {{ form.non_field_errors|join:", " }}</div>
+      {% endif %}
+
+      <p class="hint">By registering you agree to RAB's terms of use.</p>
+      <button type="submit" class="btn">Create Account →</button>
+    </form>
+    <div class="bottom">Already have an account? <a href="/login/">Sign in</a></div>
+  </div>
+</body>
+</html>

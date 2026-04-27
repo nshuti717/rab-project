@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAB | Crop Price Prediction</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:system-ui,'Segoe UI','Inter',sans-serif;background:#f5faf6;color:#1e2a2f;min-height:100vh}
+    a{text-decoration:none;color:inherit}
+    .navbar{background:#fff;box-shadow:0 2px 12px rgba(0,40,0,.07);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e0ead8;position:sticky;top:0;z-index:50}
+    .navbar-left{display:flex;align-items:center;gap:10px}
+    .navbar-left img{height:42px;width:auto}
+    .navbar-title{font-size:1rem;font-weight:800;color:#1f6e43}
+    .navbar-right{display:flex;align-items:center;gap:14px;font-size:.85rem;flex-wrap:wrap}
+    .navbar-right a{color:#1f6e43;font-weight:600}
+    .navbar-right span{color:#3a6b4e;background:#ecf7ee;padding:5px 12px;border-radius:16px;font-weight:600}
+    .btn-logout{background:#1f6e43;color:#fff!important;padding:7px 16px;border-radius:20px}
+    .btn-logout:hover{background:#155230}
+
+    .page{max-width:1100px;margin:0 auto;padding:36px 24px}
+    .page-header{margin-bottom:32px}
+    .page-header h1{font-size:1.8rem;font-weight:800;color:#1a3a28;margin-bottom:6px}
+    .page-header p{font-size:.9rem;color:#5a7a6a}
+
+    .main-grid{display:grid;grid-template-columns:380px 1fr;gap:24px;align-items:start}
+    @media(max-width:860px){.main-grid{grid-template-columns:1fr}}
+
+    /* Form Card */
+    .form-card{background:#fff;border-radius:20px;padding:28px;border:1px solid #e0ead8;box-shadow:0 4px 16px rgba(0,32,0,.06)}
+    .form-card h2{font-size:1.1rem;font-weight:700;color:#1a3a28;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+    label{display:block;font-weight:600;font-size:.85rem;color:#1f4d32;margin-bottom:5px;margin-top:14px}
+    label:first-of-type{margin-top:0}
+    select,input{width:100%;padding:10px 14px;border:1.5px solid #c8dcd0;border-radius:10px;font-size:.9rem;background:#fafff9;color:#1e2a2f;transition:.15s}
+    select:focus,input:focus{outline:none;border-color:#1f6e43;background:#fff}
+    .two-inline{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .submit-btn{width:100%;margin-top:20px;padding:13px;background:linear-gradient(135deg,#1f6e43,#2b9c5e);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:.15s;letter-spacing:.3px}
+    .submit-btn:hover{background:linear-gradient(135deg,#155230,#1f6e43);box-shadow:0 4px 16px rgba(31,110,67,.35)}
+
+    /* Result Card */
+    .result-card{background:#fff;border-radius:20px;padding:32px;border:1px solid #e0ead8;box-shadow:0 4px 16px rgba(0,32,0,.06);margin-bottom:20px}
+    .result-empty{background:#fff;border-radius:20px;padding:48px;border:2px dashed #c8dcd0;text-align:center;color:#7a9a88;font-size:.95rem}
+    .result-empty span{font-size:2.5rem;display:block;margin-bottom:12px}
+
+    .price-display{text-align:center;padding:24px 16px 28px;background:linear-gradient(135deg,#f0fbf5,#e6f7ec);border-radius:16px;margin-bottom:24px;border:1px solid #c0dcc8}
+    .price-label{font-size:.85rem;font-weight:600;color:#5a7a6a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+    .price-value{font-size:3.2rem;font-weight:800;color:#1a5030;line-height:1;margin-bottom:4px}
+    .price-unit{font-size:1rem;color:#4a7060;font-weight:500}
+    .price-meta{font-size:.85rem;color:#5a7a6a;margin-top:8px}
+
+    .advice-banner{padding:16px 20px;border-radius:14px;margin-bottom:20px;font-weight:600;font-size:.9rem;line-height:1.5}
+
+    .result-details{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .detail-item{background:#f5faf6;border-radius:10px;padding:12px 16px}
+    .detail-label{font-size:.75rem;color:#6a8a78;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+    .detail-value{font-size:.95rem;font-weight:700;color:#1a3a28}
+
+    /* Model badge */
+    .model-badge{display:inline-flex;align-items:center;gap:6px;background:#ecf7ee;border:1px solid #b8d8c0;border-radius:20px;padding:5px 12px;font-size:.78rem;font-weight:600;color:#1a5030;margin-bottom:20px}
+
+    /* History table */
+    .history-card{background:#fff;border-radius:20px;border:1px solid #e0ead8;box-shadow:0 2px 8px rgba(0,32,0,.04);overflow:hidden}
+    .history-head{padding:16px 22px;border-bottom:1px solid #e8f0e0;font-size:.95rem;font-weight:700;color:#1a3a28}
+    table{width:100%;border-collapse:collapse;font-size:.83rem}
+    th{padding:10px 16px;text-align:left;background:#f5faf5;font-weight:600;color:#4a6a5a;font-size:.77rem;text-transform:uppercase;letter-spacing:.5px}
+    td{padding:10px 16px;border-top:1px solid #f0f5f0;color:#2a3e30}
+    .tag{padding:3px 10px;border-radius:10px;font-size:.75rem;font-weight:600}
+    .tag-excellent{background:#e0f7ea;color:#0d6e30}
+    .tag-good{background:#e8f4fd;color:#1050a0}
+    .tag-wait{background:#fff8e1;color:#a07000}
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-left">
+    <img src="/static/RAB_Logo2.png" alt="RAB" onerror="this.style.display='none'">
+    <div class="navbar-title">📊 Crop Price Prediction</div>
+  </div>
+  <div class="navbar-right">
+    <a href="/">← Home</a>
+    <a href="/agent/">🤖 AI Advisor</a>
+    <a href="/apply-seed/">🌱 Apply Seeds</a>
+    <span>👤 {{ request.user.username }}</span>
+    <a href="/logout/" class="btn-logout">Logout</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <h1>📊 Crop Price Prediction</h1>
+    <p>Enter your crop details to get an ML-powered price forecast and market advisory in RWF per kilogram.</p>
+  </div>
+
+  <div class="main-grid">
+    <!-- LEFT: Form -->
+    <div>
+      <div class="form-card">
+        <h2>🔍 Enter Prediction Details</h2>
+        <form method="POST">
+          {% csrf_token %}
+          <label>Crop Type</label>
+          <select name="crop" required>
+            <option value="">— Select crop —</option>
+            {% for c in crops %}<option value="{{ c }}" {% if request.POST.crop == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+          </select>
+
+          <label>District</label>
+          <select name="district" required>
+            <option value="">— Select district —</option>
+            {% for d in districts %}<option value="{{ d }}" {% if request.POST.district == d %}selected{% endif %}>{{ d }}</option>{% endfor %}
+          </select>
+
+          <label>Season</label>
+          <select name="season" required>
+            <option value="A" {% if request.POST.season == 'A' or not request.POST.season %}selected{% endif %}>Season A — Sep to Feb (harvest Jan–Feb)</option>
+            <option value="B" {% if request.POST.season == 'B' %}selected{% endif %}>Season B — Mar to Jul (harvest Jun–Jul)</option>
+          </select>
+
+          <div class="two-inline">
+            <div>
+              <label>Month</label>
+              <select name="month" required>
+                {% for m in months %}
+                  {% with names="Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec" %}
+                  <option value="{{ m }}" {% if request.POST.month == m|stringformat:"s" %}selected{% endif %}>
+                    Month {{ m }}
+                  </option>
+                  {% endwith %}
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label>Year</label>
+              <select name="year" required>
+                {% for y in years %}
+                <option value="{{ y }}" {% if request.POST.year == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn">🔮 Predict Price</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- RIGHT: Result -->
+    <div>
+      {% if result %}
+      <div class="model-badge">
+        🤖 Gradient Boosting ML · R² 98.0% · MAE ≈27 RWF/kg
+      </div>
+      <div class="result-card">
+        <div class="price-display">
+          <div class="price-label">Predicted Market Price</div>
+          <div class="price-value">{{ result.price|floatformat:0 }}</div>
+          <div class="price-unit">RWF per kilogram</div>
+          <div class="price-meta">{{ result.crop }} · {{ result.district }} · {{ result.month_name }} {{ result.year }} · Season {{ result.season }}</div>
+        </div>
+
+        <div class="advice-banner" style="background:{{ result.advice_color }}18;border:1.5px solid {{ result.advice_color }}44;color:{{ result.advice_color }}">
+          {{ result.advice_text }}
+        </div>
+
+        <div class="result-details">
+          <div class="detail-item">
+            <div class="detail-label">Crop</div>
+            <div class="detail-value">{{ result.crop }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">District</div>
+            <div class="detail-value">{{ result.district }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Season</div>
+            <div class="detail-value">Season {{ result.season }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Period</div>
+            <div class="detail-value">{{ result.month_name }} {{ result.year }}</div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;text-align:center;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <a href="/agent/" style="display:inline-block;background:#6e3aab;color:#fff;padding:10px 22px;border-radius:24px;font-weight:700;font-size:.88rem">
+            🤖 Ask AI for more advice →
+          </a>
+          {% if result and result.pred_id %}
+          <a href="/predict/export/{{ result.pred_id }}/" target="_blank" style="display:inline-block;background:#0369a1;color:#fff;padding:10px 22px;border-radius:24px;font-weight:700;font-size:.88rem">
+            🖨️ Export as PDF Report
+          </a>
+          {% endif %}
+        </div>
+      </div>
+      {% else %}
+      <div class="result-empty">
+        <span>📊</span>
+        <strong>Your prediction will appear here</strong><br>
+        Fill in the form and click <em>Predict Price</em> to get an ML-powered price forecast for your crop.
+      </div>
+      {% endif %}
+
+      <!-- Prediction History -->
+      {% if history %}
+      <div class="history-card">
+        <div class="history-head">🕐 Recent Predictions</div>
+        <table>
+          <thead>
+            <tr><th>Crop</th><th>District</th><th>Period</th><th>Price (RWF/kg)</th></tr>
+          </thead>
+          <tbody>
+            {% for h in history %}
+            <tr>
+              <td>{{ h.crop }}</td>
+              <td>{{ h.district }}</td>
+              <td>{{ h.month_name }} {{ h.year }}</td>
+              <td><strong>{{ h.predicted_price|floatformat:0 }}</strong></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
